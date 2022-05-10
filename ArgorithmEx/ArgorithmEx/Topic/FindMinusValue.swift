@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Topic10 {
+struct Topic11 {
     static func test() {
         Ex1.test()
     }
@@ -15,7 +15,7 @@ struct Topic10 {
 }
 
 
-extension Topic10 {
+extension Topic11 {
     struct Ex1 {
         
         static func findMinusValue(in rotateArray: [Int]) -> Int? {
@@ -71,6 +71,9 @@ extension Topic10 {
             
             let c = [1, 1, 1, 2, 1]
             assert(findMinusValue(in: c) == 1)
+            
+            let d = [4, 5, 6,  1, 2, 3]
+            assert(findMinusValue(in: d) == 1)
             
             print("\(self) OVER")
         }

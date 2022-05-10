@@ -7,13 +7,15 @@
 
 import Foundation
 
-class Node<T> {
+class Node<T>: NSObject {
     var value: T
     var next: Node<T>?
+    var pre: Node<T>?
     
-    init(value: T, next: Node<T>? = nil) {
+    init(value: T, next: Node<T>? = nil, pre: Node<T>? = nil) {
         self.value = value
         self.next = next
+        self.pre = pre
     }
     
 }
