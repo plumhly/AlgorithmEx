@@ -5702,10 +5702,19 @@ Solution().match("aaaaaaaaaaaaab","a*a*a*a*a*a*a*a*a*a*c")
 //
 
 
-struct Heap<T> {
-    let comparetor: (T, T) -> Bool
-    init(comparetor: @escaping (T, T) -> Bool) {
-        self.comparetor = comparetor
+struct PriorityQueue<T: Comparable> {
+    
+    typealias Comparator = (T, T) -> Bool
+    
+    var comparator: Comparator?
+    
+    init(comparator: Comparator? = nil) {
+        self.comparator = comparator
+    }
+    
+    init<S: Sequence>(contentof: S, comparator: Comparator? = nil) where T == S.Element {
+        self.comparator = comparator
+        data.append(contentsOf: contentof)
     }
     
     var data: [T] = []
@@ -5717,23 +5726,163 @@ struct Heap<T> {
         return data.isEmpty
     }
     
-    var top: T? {
+    var peek: T? {
         return data.first
     }
     
     mutating
-    func removeTop() -> T? {
-        return data.isEmpty ? nil : data.removeFirst()
-    }
-    
-    mutating
-    func insert(item: T) {
+    func poll() -> T? {
+        guard !data.isEmpty else {
+            return nil
+        }
         
+        let result = data[0]
+        if data.count > 1 {
+            //把末尾的元素提上来
+            let item = data.removeLast()
+            //下沉
+            sink(value: item, at: 0)
+        } else {
+            data.removeFirst()
+        }
+        
+        return result
     }
     
     private
-    func heapify() {
+    mutating
+    func sinkComparable(value: T, at index: Int) {
+        var index = index
+        let lastParentIndex = data.count >> 1
+        while index < lastParentIndex {
+            let leftChildIndex = (index << 1) + 1
+            var largeValue = data[leftChildIndex]
+            var nextIndex = leftChildIndex
+            
+            let rightChildIndex = leftChildIndex + 1
+            if rightChildIndex < data.count, data[rightChildIndex] > largeValue {
+                largeValue = data[rightChildIndex]
+                nextIndex = rightChildIndex
+            }
+            
+            if value >= largeValue {
+                break
+            }
+            
+            data[index] = largeValue
+            index = nextIndex
+        }
         
+        data[index] = value
+    }
+    
+    private
+    mutating
+    func sinkUsingComparator(value: T, at index: Int) {
+        var index = index
+        let lastParentIndex = data.count >> 1
+        while index < lastParentIndex {
+            let leftChildIndex = (index << 1) + 1
+            var largeValue = data[leftChildIndex]
+            var nextIndex = leftChildIndex
+            
+            let rightChildIndex = leftChildIndex + 1
+            if rightChildIndex < data.count, comparator!(data[rightChildIndex], largeValue) {
+                largeValue = data[rightChildIndex]
+                nextIndex = rightChildIndex
+            }
+            
+            if comparator!(value, largeValue) {
+                break
+            }
+            
+            data[index] = largeValue
+            index = nextIndex
+        }
+        
+        data[index] = value
+
+    }
+    
+    private
+    mutating
+    func sink(value: T, at index: Int) {
+        if self.comparator != nil {
+            sinkUsingComparator(value: value, at: index)
+        } else {
+            sinkComparable(value: value, at: index)
+        }
+    }
+    
+    mutating
+    func add(item: T) {
+        data.append(item)
+        if data.count > 1 {
+            swim(value: item, at: data.count - 1)
+        }
+    }
+    
+    private
+    mutating
+    func swim(value: T, at index: Int) {
+        if self.comparator == nil {
+            swimComparable(value: value, at: index)
+        } else {
+            swimUsingComparator(value: value, at: index)
+        }
+    }
+    
+    private
+    mutating
+    func swimUsingComparator(value: T, at index: Int) {
+        var index = index
+        while index > 0 {
+            //查找父节点
+            let parentIndex = (index - 1) >> 1
+            let parent = data[parentIndex]
+            if !comparator!(value, parent) {
+                break
+            }
+            data[index] = parent
+            index = parentIndex
+        }
+        data[index] = value
+    }
+    
+    private
+    mutating
+    func swimComparable(value: T, at index: Int) {
+        var index = index
+        while index > 0 {
+            //查找父节点
+            let parentIndex = (index - 1) >> 1
+            let parent = data[parentIndex]
+            if value <= parent {
+                break
+            }
+            data[index] = parent
+            index = parentIndex
+        }
+        data[index] = value
+    }
+    
+    private
+    mutating
+    func heapify() {
+        let lastParentIndex = (data.count - 1) >> 2
+        for index in stride(from: lastParentIndex, through: 0, by: -1) {
+            buildHeap(at: index)
+        }
+    }
+    
+    private
+    mutating
+    func buildHeap(at index: Int) {
+        guard !data.isEmpty, index < data.count else {
+            return
+        }
+        
+        sink(value: data[index], at: index)
     }
 }
 
@@ -5747,9 +5896,35 @@ public class Solution {
      * @param num int整型
      * @return 无
      */
+    
+    var maxHeap = PriorityQueue<Int> { $0 > $1 }
+    var minHeap = PriorityQueue<Int> { $0 < $1 }
+    
     func Insert ( _ num: Int) {
         // write code here
-
+        //大顶堆size >= 小顶堆size
+        if maxHeap.size == minHeap.size {
+            //如果插入的值大于前部分的最大值，那么需要把后部分的最小值移动到前面，然后把加入的值移动到后面
+            if maxHeap.isEmpty {
+                maxHeap.add(item: num)
+            } else {
+                if num > minHeap.peek! {
+                    maxHeap.add(item: minHeap.poll()!)
+                    minHeap.add(item: num)
+                } else {
+                    maxHeap.add(item: num)
+                }
+            }
+        } else {
+            //如果 num < 前面的最小值，那么需要把前面的最大值加入右边，然后把num加入前面
+            if num < maxHeap.peek! {
+                minHeap.add(item: maxHeap.poll()!)
+                maxHeap.add(item: num)
+            } else {
+                // 直接加入后面
+                minHeap.add(item: num)
+            }
+        }
     }
 
     /**
@@ -5760,8 +5935,11 @@ public class Solution {
      * @return double浮点型
      */
     func GetMedian () -> Double {
-        // write code here
-
+        guard maxHeap.size > 0 else {
+            return 0.0
+        }
+        
+        return minHeap.size == maxHeap.size ? Double(minHeap.peek! + maxHeap.peek!) / 2 : Double(maxHeap.peek!)
     }
 }
 
@@ -5833,3 +6011,26 @@ public class Solution {
 }
 */
 
+//var pq = PriorityQueue<Int> { $0 < $1 }
+//pq.add(item: 4)
+//pq.add(item: 2)
+//pq.add(item: 3)
+//
+//pq.poll()
+//pq
+//pq.poll()
+//pq
+//pq.poll()
+
+
+let s = Solution()
+s.Insert(5)
+s.GetMedian()
+
+s.Insert(2)
+s.GetMedian()
+s.Insert(1)
+s.GetMedian()
+
+//s.Insert(1)
+//s.GetMedian()
