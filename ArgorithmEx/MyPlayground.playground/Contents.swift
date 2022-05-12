@@ -5886,6 +5886,7 @@ struct PriorityQueue<T: Comparable> {
     }
 }
 
+/*
 ////数据流中的中位数
 ////空间复杂度 O(n) ，时间复杂度 O(nlogn)
 public class Solution {
@@ -5942,21 +5943,133 @@ public class Solution {
         return minHeap.size == maxHeap.size ? Double(minHeap.peek! + maxHeap.peek!) / 2 : Double(maxHeap.peek!)
     }
 }
+ 
+ //var pq = PriorityQueue<Int> { $0 < $1 }
+ //pq.add(item: 4)
+ //pq.add(item: 2)
+ //pq.add(item: 3)
+ //
+ //pq.poll()
+ //pq
+ //pq.poll()
+ //pq
+ //pq.poll()
 
 
+ //let s = Solution()
+ //s.Insert(5)
+ //s.GetMedian()
+ //
+ //s.Insert(2)
+ //s.GetMedian()
+ //s.Insert(1)
+ //s.GetMedian()
+
+ //s.Insert(1)
+ //s.GetMedian()
+*/
+
+/*
 ////N皇后问题
-//public class Solution {
-//    /**
-//     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
-//     *
-//     * @param n int整型 the n
-//     * @return int整型
-//     */
-//    func Nqueen ( _ n: Int) -> Int {
-//        // write code here
-//
-//    }
-//}
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param n int整型 the n
+     * @return int整型
+     */
+    func Nqueen ( _ n: Int) -> Int {
+        // write code here
+        return method2(n: n)
+    }
+    
+    /*
+     采用三个set
+     */
+    
+    var columns: Set<Int> = []
+    // 正斜线
+    var dignonals1: Set<Int> = []
+    // 反斜线
+    var dignonals2: Set<Int> = []
+    
+    private
+    func method1(n: Int) -> Int {
+        guard n > 0 else {
+            return 0
+        }
+        
+        var total = 0
+        search1(row: 0, n: n, totalCount: &total)
+        
+        return total
+    }
+    
+    private
+    func search1(row: Int, n: Int, totalCount: inout Int) {
+        guard row < n else {
+            totalCount += 1
+            return
+        }
+        // column
+        for c in 0 ..< n {
+            if columns.contains(c) || dignonals1.contains(row + c) || dignonals2.contains(row - c) {
+                continue
+            }
+            columns.insert(c)
+            dignonals1.insert(row + c)
+            dignonals2.insert(row - c)
+            search1(row: row + 1, n: n, totalCount: &totalCount)
+            //回溯
+            columns.remove(c)
+            dignonals1.remove(row + c)
+            dignonals2.remove(row - c)
+        }
+    }
+    
+    /*
+     用位来存储信息
+     二进制数 高位 <-------- 低位
+        列        876543210
+     1.查看可以放皇后的位置 ~(column|diag1|diag2) & (2^n - 1)  diag1: 对角线 \ diag2: 反对角线 /
+     2.查找最低位的1：x & (-x)
+     3.消除最低位的1：x & (x - 1)
+     */
+    private
+    func method2(n: Int) -> Int {
+        guard n > 0 else {
+            return 0
+        }
+        
+        var total = 0
+        search2(row: 0, n: n, column: 0, diagonal1: 0, diagonal2: 0, totalCount: &total)
+        
+        return total
+    }
+    
+    private
+    func search2(row: Int, n: Int, column: Int, diagonal1: Int, diagonal2: Int, totalCount: inout Int) {
+        guard row < n else {
+            totalCount += 1
+            return
+        }
+        
+        //可以放1的位置
+        var canPlaceQueue = ~(column|diagonal1|diagonal2) & ((1 << n) - 1)
+        while canPlaceQueue > 0 {
+            //获取最后一个位置的1
+            let place = canPlaceQueue & (-canPlaceQueue)
+            search2(row: row + 1, n: n, column: column | place, diagonal1: (diagonal1 | place) >> 1, diagonal2: (diagonal2 | place) << 1, totalCount: &totalCount)
+            canPlaceQueue &= (canPlaceQueue - 1)
+        }
+    }
+
+}
+
+Solution().Nqueen(1)
+Solution().Nqueen(2)
+Solution().Nqueen(8)
+*/
 
 /*
 //把二叉树打印成多行
@@ -6011,26 +6124,107 @@ public class Solution {
 }
 */
 
-//var pq = PriorityQueue<Int> { $0 < $1 }
-//pq.add(item: 4)
-//pq.add(item: 2)
-//pq.add(item: 3)
-//
-//pq.poll()
-//pq
-//pq.poll()
-//pq
-//pq.poll()
+//字典树的实现
+/*
+ 1. void insert(String word)：添加word，可重复添加；
+ 2. void delete(String word)：删除word，如果word添加过多次，仅删除一次；
+ 3. boolean search(String word)：查询word是否在字典树中出现过(完整的出现过，前缀式不算)；
+ 4. int prefixNumber(String pre)：
+ */
+
+struct Trie {
+    var headers: [Character: TreeNode] = [:]
+    
+    mutating
+    func insert(word: String) {
+        
+    }
+    
+    mutating
+    func delete(word: String) {
+        
+    }
+    
+    func search(word: String) -> Bool {
+        
+    }
+    
+    func prefixNumber(prefix: String) -> Int {
+        
+    }
+    
+}
+
+class TrieNode {
+    let value: Character
+    private(set) var count: Int = 1
+    
+    var children: [Character: TrieNode] = [:]
+    
+    init?(string: String, index: String.Index) {
+        guard index < string.endIndex else {
+            return nil
+        }
+        
+        value = string[index]
+        parseChild(string: string, index: string.index(after: index))
+    }
+    
+    private
+    func parseChild(string: String, index: String.Index) {
+        guard index < string.endIndex else {
+            return
+        }
+        
+        let child = TrieNode(string: string, index: index)
+        if children[string[index]] {
+            node.increaseCount()
+        } else {
+            children[string[index]] = child
+        }
+        
+    }
+    
+    func increaseCount() {
+        count += 1
+    }
+    
+    func decreaseCount() {
+        count -= 1
+    }
+    
+    mutating
+    func insert(word: String,) {
+        
+    }
+    
+    mutating
+    func delete(word: String) {
+        
+    }
+    
+    func search(word: String) -> Bool {
+        
+    }
+    
+    func prefixNumber(prefix: String) -> Int {
+        
+    }
+}
+
+//var a = [TriNode(value: "x")]
+//a[0].increaseCount()
+//a
 
 
-let s = Solution()
-s.Insert(5)
-s.GetMedian()
-
-s.Insert(2)
-s.GetMedian()
-s.Insert(1)
-s.GetMedian()
-
-//s.Insert(1)
-//s.GetMedian()
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param operators string字符串二维数组 the ops
+     * @return string字符串一维数组
+     */
+    func trieU ( _ operators: [[String]]) -> [String] {
+        // write code here
+    }
+}
