@@ -6132,89 +6132,130 @@ public class Solution {
  4. int prefixNumber(String pre)：
  */
 
-struct Trie {
-    var headers: [Character: TreeNode] = [:]
-    
-    mutating
-    func insert(word: String) {
-        
-    }
-    
-    mutating
-    func delete(word: String) {
-        
-    }
-    
-    func search(word: String) -> Bool {
-        
-    }
-    
-    func prefixNumber(prefix: String) -> Int {
-        
-    }
-    
-}
+//struct Trie {
+//    var headers: [Character: TrieNode] = [:]
+//
+//    mutating
+//    func insert(word: String) {
+//
+//    }
+//
+//    mutating
+//    func delete(word: String) {
+//
+//    }
+//
+//    func search(word: String) -> Bool {
+//
+//    }
+//
+//    func prefixNumber(prefix: String) -> Int {
+//
+//    }
+//
+//}
 
+/*
 class TrieNode {
-    let value: Character
-    private(set) var count: Int = 1
+    // 经过的数量
+    private(set) var path = 0
+    // 结尾的数量
+    private(set) var end = 0
     
-    var children: [Character: TrieNode] = [:]
+    private(set) var children: [Character: TrieNode] = [:]
     
-    init?(string: String, index: String.Index) {
-        guard index < string.endIndex else {
-            return nil
-        }
-        
-        value = string[index]
-        parseChild(string: string, index: string.index(after: index))
-    }
-    
-    private
-    func parseChild(string: String, index: String.Index) {
-        guard index < string.endIndex else {
+    func insert(word: String) {
+        guard !word.isEmpty else {
             return
         }
         
-        let child = TrieNode(string: string, index: index)
-        if children[string[index]] {
-            node.increaseCount()
-        } else {
-            children[string[index]] = child
+        var current = self
+        for item in word {
+            if let node = current.children[item] {
+                // 如果当前已经含有该元素
+                current = node
+            } else {
+                let node = TrieNode()
+                current.children[item] = node
+                current = node
+            }
+            current.path += 1
+            
         }
-        
-    }
-    
-    func increaseCount() {
-        count += 1
-    }
-    
-    func decreaseCount() {
-        count -= 1
-    }
-    
-    mutating
-    func insert(word: String,) {
-        
-    }
-    
-    mutating
-    func delete(word: String) {
-        
+        //结尾节点做好标注
+        current.end += 1
     }
     
     func search(word: String) -> Bool {
+        guard !word.isEmpty else {
+            return false
+        }
         
+        let searchResult = find(word: word)
+        
+        return searchResult.result && searchResult.last.end > 0
     }
     
-    func prefixNumber(prefix: String) -> Int {
+    private
+    func find(word: String) -> (result: Bool, last: TrieNode) {
+        var result = true
+        var current = self
         
+        for item in word {
+            if let node = current.children[item] {
+                current = node
+                continue
+            }
+            
+            result = false
+            break
+        }
+        
+        //查看是否是终点
+        return (result, current)
+    }
+    
+    func contain(prefix: String) -> Bool {
+        guard !prefix.isEmpty else {
+            return false
+        }
+        
+        return find(word: prefix).result
+    }
+    
+    func count(of prefix: String) -> Int {
+        guard !prefix.isEmpty else {
+            return 0
+        }
+        
+        let result = find(word: prefix)
+        
+        return result.result ? result.last.path : 0
+    }
+    
+    func delete(word: String) {
+        guard search(word: word) else {
+            return
+        }
+        
+        var current = self
+        for item in word {
+            // 判断的数据
+            // 1. 经过的数量
+            // 2. 如果该路径既是单词又是路径，那么需要更新end
+            let node = current.children[item]!
+            node.path -= 1
+            if node.path == 0 {
+                //移除
+                current.children[item] = nil
+                return
+            }
+            current = current.children[item]!
+        }
+        
+        current.end -= 1
     }
 }
-
-//var a = [TriNode(value: "x")]
-//a[0].increaseCount()
-//a
 
 
 public class Solution {
@@ -6226,5 +6267,141 @@ public class Solution {
      */
     func trieU ( _ operators: [[String]]) -> [String] {
         // write code here
+        
+        /*
+         现在给定一个m，表示有m次操作，每次操作都为以上四种操作之一。每次操作会给定一个整数op和一个字符串word，op代表一个操作码，如果op为1，则代表添加word，op为2则代表删除word，op为3则代表查询word是否在字典树中，op为4代表返回以word为前缀的单词数量（数据保证不会删除不存在的word）。
+
+         */
+        var result: [String] = []
+        let trie = TrieNode()
+        for items in operators {
+            switch (items[0]) {
+            case "1":
+                trie.insert(word: items[1])
+                
+            case "2":
+                trie.delete(word: items[1])
+                
+            case "3":
+                let value = trie.search(word: items[1]) ? "YES" : "NO"
+                result.append(value)
+                
+            case "4":
+                let count = trie.count(of: items[1])
+                result.append("\(count)")
+                
+            default:
+                break
+            }
+        }
+        
+        
+        return result
+    }
+}
+
+
+Solution().trieU([["1","qwer"],["1","qwe"],["3","qwer"],["4","q"],["2","qwer"],["3","qwer"],["4","q"]])
+*/
+
+/*
+//连续子数组的最大乘积
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param nums int整型一维数组
+     * @return int整型
+     */
+    func maxProduct ( _ nums: [Int]) -> Int {
+        
+        guard !nums.isEmpty else {
+            return 0
+        }
+        
+        // write code here
+        var maxValue = Int.min
+        
+        var cur: (max: Int, min: Int) = (1, 1)
+        for value in nums {
+            if value == 0 {
+                maxValue = max(value, maxValue)
+                cur = (1, 1)
+                continue
+            }
+            let maxMaybe = cur.max * value
+            let minMaybe = cur.min * value
+            // 需要三个数比较
+            let mx = max(maxMaybe, minMaybe, value)
+            let mn = min(maxMaybe, minMaybe, value)
+            maxValue = max(mx, maxValue)
+            cur.max = mx
+            cur.min = mn
+        }
+        
+        return maxValue
+    }
+}
+
+Solution().maxProduct([3,2,-1,4])
+Solution().maxProduct([-3, 0, -2])
+Solution().maxProduct([-3,2,-1])
+*/
+
+//把数字翻译成字符串
+/*
+ 有一种将字母编码成数字的方式：'a'->1, 'b->2', ... , 'z->26'。
+ 我们把一个字符串编码成一串数字，再考虑逆向编译成字符串。
+ 由于没有分隔符，数字编码成字母可能有多种编译结果，例如 11 既可以看做是两个 'a' 也可以看做是一个 'k' 。但 10 只可能是 'j' ，因为 0 不能编译成任何结果。
+ 现在给一串数字，返回有多少种可能的译码结果
+
+ 数据范围：字符串长度满足 0 < n \le 900<n≤90
+ 进阶：空间复杂度 O(n)，时间复杂度 O(n)
+ */
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * 解码
+     * @param nums string字符串 数字串
+     * @return int整型
+     */
+
+    
+    func solve ( _ nums: String) -> Int {
+        // write code here
+        
+        guard !nums.isEmpty else {
+            return 0
+        }
+        
+        var nums = Array(nums)
+        
+        // key表示从当前到字符串结尾有几种翻译方式
+        var store = Array<Int>(repeating: 0, count: nums.count + 1)
+        
+        for index in stride(from: nums.count - 1, through: 0, by: -1) {
+            if nums[index] == "0" {
+                store[index] = 0
+                continue
+            }
+            
+            if index == nums.count - 1 {
+                store[index] = 1
+                continue
+            }
+            
+            //看能不能拆分为
+            // 单个
+            var count = store[index + 2]
+            // 2位
+            let componet = Int(nums[index])! * 10 + Int(nums[index + 1]!)
+            if componet <= 26 {
+                count += store[index + 1]
+            }
+            
+            
+        }
+        
     }
 }

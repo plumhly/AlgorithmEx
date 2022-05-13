@@ -67,6 +67,7 @@
 		38960BE52728FE4F00D6E343 /* MaxProfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaxProfit.swift; sourceTree = "<group>"; };
 		38960BE72729030300D6E343 /* Plus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plus.swift; sourceTree = "<group>"; };
 		38960BE92729376A00D6E343 /* LRU.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LRU.swift; sourceTree = "<group>"; };
+		38CB1BC0282E321300E379E8 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +84,7 @@
 		38960BA92726807700D6E343 = {
 			isa = PBXGroup;
 			children = (
+				38CB1BC0282E321300E379E8 /* MyPlayground.playground */,
 				38960BB42726807700D6E343 /* ArgorithmEx */,
 				38960BB32726807700D6E343 /* Products */,
 			);
