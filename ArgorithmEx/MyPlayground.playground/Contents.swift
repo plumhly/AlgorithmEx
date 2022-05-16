@@ -5617,6 +5617,7 @@ public class Solution {
         
         for i in 0 ... s.count {
             for j in 1 ... p.count {
+                // 这是当前index, 因为数组加长了1
                 if pArray[j - 1] == "*" {
                     dp[i][j] = dp[i][j - 2]
                     // 如果p和s末尾相同，那么结果可能和i-1有关
@@ -6359,6 +6360,7 @@ Solution().maxProduct([-3,2,-1])
  数据范围：字符串长度满足 0 < n \le 900<n≤90
  进阶：空间复杂度 O(n)，时间复杂度 O(n)
  */
+/*
 public class Solution {
     /**
      * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
@@ -6367,7 +6369,39 @@ public class Solution {
      * @return int整型
      */
 
+    // 从前往后、采用滚动数组（三个变量交替赋值）,这题0是有效的
+    func solve1( _ nums: String) -> Int {
+        guard !nums.isEmpty else {
+            return 0
+        }
+        
+        let nums = Array(nums)
+        
+        // f(-1) = 0, f(0) = 1
+        var p = 0
+        var q = 0
+        var r = 1
+        for i in 0 ..< nums.count {
+            p = q
+            q = r
+            r = 0
+            r += q //表示单个字符满足
+            if i == 0 {
+                continue
+            }
+            
+            let pre = String(nums[i-1...i])
+            if pre >= "10" && pre <= "26" {
+                r += p
+            }
+        }
+        
+        return r
+    }
     
+    // 从后到前
+    // 时间 O(n)
+    // 空间 O(n)，因为只用 i-1 和 i-2那么
     func solve ( _ nums: String) -> Int {
         // write code here
         
@@ -6375,10 +6409,10 @@ public class Solution {
             return 0
         }
         
-        var nums = Array(nums)
+        let nums = Array(nums)
         
         // key表示从当前到字符串结尾有几种翻译方式
-        var store = Array<Int>(repeating: 0, count: nums.count + 1)
+        var store = Array<Int>(repeating: 0, count: nums.count)
         
         for index in stride(from: nums.count - 1, through: 0, by: -1) {
             if nums[index] == "0" {
@@ -6393,15 +6427,329 @@ public class Solution {
             
             //看能不能拆分为
             // 单个
-            var count = store[index + 2]
+            var count = store[index + 1]
             // 2位
-            let componet = Int(nums[index])! * 10 + Int(nums[index + 1]!)
+            let componet = Int(String(nums[index]))! * 10 + Int(String(nums[index + 1]))!
             if componet <= 26 {
-                count += store[index + 1]
+                // ⚠️这里如果末尾是类似 10， 那么该值为1
+                if index < nums.count - 2 {
+                    count += store[index + 2]
+                } else {
+                    count += 1
+                }
             }
             
-            
+            store[index] = count
         }
         
+        return store.first ?? 0
+    }
+}
+
+Solution().solve("12258")
+Solution().solve("20")
+*/
+
+/*
+//买卖股票的最好时机(二)
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * 计算最大收益
+     * @param prices int整型一维数组 股票每一天的价格
+     * @return int整型
+     */
+    func maxProfit ( _ prices: [Int]) -> Int {
+        // write code here
+        guard prices.count > 1 else {
+            return 0
+        }
+        
+        var slow = 0
+        var fast = slow + 1
+        var result = 0
+        while fast < prices.count {
+            // 买入的时机是有利可图，也就是后面的数大于前面的数
+            let fastValue = prices[fast]
+            let slowValue = prices[slow]
+            if fastValue > slowValue {
+                result += fastValue - slowValue
+            }
+            slow += 1
+            fast = slow + 1
+        }
+        
+        return result
+    }
+}
+
+
+Solution().maxProfit([1, 2, 3])
+Solution().maxProfit([3, 2, 1])
+Solution().maxProfit([8, 9, 2, 5, 4, 7, 1])
+*/
+/*
+//通配符匹配
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param s string字符串
+     * @param p string字符串
+     * @return bool布尔型
+     */
+    
+    // ？和* 都不依赖于前面的字符
+    func isMatch ( _ s: String,  _ p: String) -> Bool {
+        // write code here
+//        return usingDp(s, p)
+        return usingGreedy(s, p)
+    }
+    
+    private
+    func usingGreedy(_ s: String, _ p: String) -> Bool {
+        guard !p.isEmpty else {
+            return s.isEmpty
+        }
+        
+        var sMatchIndex = -1
+        var pMatchIndex = -1
+        var sIndex = 0
+        var pIndex = 0
+        let s = Array(s)
+        let p = Array(p)
+        
+        while sIndex < s.count {
+            if pIndex < p.count, p[pIndex] == "?" || s[sIndex] == p[pIndex] {
+                sIndex += 1
+                pIndex += 1
+            } else if pIndex < p.count, p[pIndex] == "*" {
+                // *可以使用多次
+                sMatchIndex = sIndex
+                pMatchIndex = pIndex
+                //这表示不适用*
+                pIndex += 1
+                
+            } else if sMatchIndex >= 0 {
+                //这里表示s和p在当前的index下不匹配，如果之前包含了*,那么可以多次使用*来抵消不同的字符
+                //s和p的index都要重置
+                sIndex = sMatchIndex
+                sMatchIndex += 1
+                pIndex = pMatchIndex + 1
+            } else {
+                return false
+            }
+        }
+        
+        //把p后面剩下的*去除
+        while pIndex < p.count, p[pIndex] == "*" {
+            pIndex += 1
+        }
+        
+        return p.count == pIndex
+    }
+    
+    // 时间 O(nm)
+    // 空间 O(nm)
+    private
+    func usingDp(_ s: String, _ p: String) -> Bool {
+        guard !p.isEmpty else {
+            return s.isEmpty
+        }
+        
+        let s = Array(s)
+        let p = Array(p)
+        
+        var dp = [[Bool]](repeating: [Bool](repeating: false, count: p.count + 1), count: s.count + 1)
+        
+        /*
+         边界条件
+         1. s和p都为空 dp[0][0] = true
+         2. dp[0][j] 只有含有j个*，才能位true
+         3. dp[i][0] false
+         */
+        
+        dp[0][0] = true
+        for index in 1 ... p.count {
+            if p[index - 1] != "*" {
+                break
+            }
+            dp[0][index] = true
+        }
+        
+        // s为空的情况
+        if s.isEmpty {
+            return dp[0][p.count]
+        }
+        
+        for row in 1 ... s.count {
+            for colum in 1 ... p.count {
+                if p[colum - 1] == "?" || s[row - 1] == p[colum - 1] {
+                    //结果取决于前面的结果
+                    dp[row][colum] = dp[row - 1][colum - 1]
+                } else if p[colum - 1] == "*" {
+                    // 没有使用*和使用*
+                    dp[row][colum] = dp[row][colum - 1] || dp[row - 1][colum]
+                }
+            }
+        }
+        
+        return dp[s.count][p.count]
+    }
+}
+
+
+Solution().isMatch("a", "b")
+Solution().isMatch("aa", "**")
+Solution().isMatch("aa", "?*")
+*/
+
+/*
+//二叉树的镜像
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param pRoot TreeNode类
+     * @return TreeNode类
+     */
+    func Mirror ( _ pRoot: TreeNode?) -> TreeNode? {
+        // write code here
+        guard let pRoot = pRoot else {
+            return nil
+        }
+        
+        let tempLeft = pRoot.left
+        pRoot.left = Mirror(pRoot.right)
+        pRoot.right = Mirror(tempLeft)
+        
+        return pRoot
+    }
+}
+*/
+
+/*
+//调整数组顺序使奇数位于偶数前面(一)
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param array int整型一维数组
+     * @return int整型一维数组
+     */
+    func reOrderArray ( _ array: [Int]) -> [Int] {
+        // write code here
+//        return method1(array)
+        return method2(array)
+    }
+    
+    private
+    func method2(_ array: [Int]) -> [Int] {
+        guard array.count > 1 else {
+            return array
+        }
+        
+        //使用插入排序，排序规则，奇数 < 偶数，
+        var index = 0
+        var currentIndex = 0
+        var array = array
+        while currentIndex < array.count {
+            let currentValue = array[currentIndex]
+            let isOdd = currentValue % 2 == 1
+            if isOdd {
+                //往前排
+                index = currentIndex
+                while index > 0 {
+                    // 奇数
+                    if array[index - 1] % 2 == 1 {
+                        break
+                    }
+                    // 偶数
+                    array[index] = array[index - 1]
+                    index -= 1
+                }
+                array[index] = currentValue
+            }
+            
+            currentIndex += 1
+        }
+        
+        return array
+    }
+    
+    /*
+     时间：O(n)
+     空间：O(n)
+     */
+    private
+    func method1(_ array: [Int]) -> [Int] {
+        guard array.count > 1 else {
+            return array
+        }
+        
+        let oddCount = array.reduce(into: 0) { $0 += $1 % 2 == 0 ? 0 : 1 }
+        
+        var result = Array(repeating: 0, count: array.count)
+        
+        var oddIndex = 0
+        var evenIndex = oddCount
+        
+        for value in array {
+            if value % 2 == 0 {
+                result[evenIndex] = value
+                evenIndex += 1
+            } else {
+                result[oddIndex] = value
+                oddIndex += 1
+            }
+        }
+        
+        return result
+    }
+}
+
+Solution().reOrderArray([1, 2, 3, 4, 5])
+*/
+
+// 判断t1树中是否有与t2树完全相同的子树
+/*
+ 完全子树和是否是子结构不同
+ 子树：从root树分离子树
+ 子结构：包含结构
+ 比如 「1， 2， 3， 4， 5」
+ [1, 2] 是子结构但是不是子树
+ 子树一定是子结构，子结构不一定是子树
+ */
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param root1 TreeNode类
+     * @param root2 TreeNode类
+     * @return bool布尔型
+     */
+    func isContains ( _ root1: TreeNode?,  _ root2: TreeNode?) -> Bool {
+        // write code here
+        
+        guard let root1 = root1, let root2 = root2 else {
+            return false
+        }
+        
+        return seach(root1, root2) || isContains(root1.left, root2) || isContains(root1.right, root2)
+    }
+
+    private
+    func seach(_ root1: TreeNode?, _ root2: TreeNode?) -> Bool {
+        if root1 == nil, root2 == nil {
+            return true
+        }
+        
+        if root1 == nil || root1 == nil || root1?.val != root2?.val {
+            return false
+        }
+        
+        return seach(root1?.left, root2?.left) && seach(root1?.right, root2?.right)
     }
 }
