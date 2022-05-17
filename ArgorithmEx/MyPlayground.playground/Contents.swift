@@ -6722,6 +6722,7 @@ Solution().reOrderArray([1, 2, 3, 4, 5])
  [1, 2] 是子结构但是不是子树
  子树一定是子结构，子结构不一定是子树
  */
+/*
 public class Solution {
     /**
      * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
@@ -6753,3 +6754,182 @@ public class Solution {
         return seach(root1?.left, root2?.left) && seach(root1?.right, root2?.right)
     }
 }
+*/
+
+/*
+//合并二叉树
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param t1 TreeNode类
+     * @param t2 TreeNode类
+     * @return TreeNode类
+     */
+    func mergeTrees ( _ t1: TreeNode?,  _ t2: TreeNode?) -> TreeNode? {
+        // write code here
+        guard let t1 = t1 else {
+            return t2
+        }
+        
+        guard let t2 = t2 else {
+            return t1
+        }
+
+        t1.val = t1.val + t2.val
+        t1.left = mergeTrees(t1.left, t2.left)
+        t1.right = mergeTrees(t1.right, t2.right)
+        
+        return t1
+    }
+}
+*/
+
+/*
+//买卖股票的最好时机(三)
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * 两次交易所能获得的最大收益
+     * @param prices int整型一维数组 股票每一天的价格
+     * @return int整型
+     */
+    func maxProfit ( _ prices: [Int]) -> Int {
+        // write code here
+        guard prices.count > 1 else {
+            return 0
+        }
+        
+        var buy1 = -prices[0]
+        var sell1 = 0
+        var buy2 = -prices[0]
+        var sell2 = 0
+        for i in 1 ..< prices.count {
+            /*
+             1.之前买了，现在不操作
+             2.之前没有任何操作，现在买入
+             */
+            buy1 = max(buy1, -prices[i])
+            /*
+             1.不做卖出操作
+             2.做出卖出操作
+             */
+            sell1 = max(sell1, buy1 + prices[i])
+            /*
+             1.不做任何操作
+             2.做了一次交易后，又买入
+             */
+            buy2 = max(buy2, sell1 - prices[i])
+            
+            /*
+             1.不做任何操作
+             2.做了一次交易后，并且又买入了，现在卖出
+             */
+            sell2 = max(sell2, buy2 + prices[i])
+        }
+        
+        return sell2
+    }
+}
+
+Solution().maxProfit([1, 2, 8, 3, 8])
+Solution().maxProfit([1,2,4,2,5,7,2,4,9,0])
+*/
+
+/*
+//最长增长路径
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * 递增路径的最大长度
+     * @param matrix int整型二维数组 描述矩阵的每个数
+     * @return int整型
+     */
+    
+    let direction = [(-1, 0),(1, 0), (0, -1), (0, 1)]
+    
+    func solve ( _ matrix: [[Int]]) -> Int {
+        // write code here
+        guard !matrix.isEmpty else {
+            return 0
+        }
+        
+        let row = matrix.count
+        let column = matrix[0].count
+        var memory = [[Int]](repeating: [Int](repeating: 0, count: column), count: row)
+        var result = 0
+        
+        for r in 0 ..< row {
+            for c in 0 ..< column {
+                result = max(result, search(matrix: matrix, row: r, column: c, memory: &memory))
+            }
+        }
+        
+        return result
+    }
+    
+    private
+    func search(matrix: [[Int]], row: Int, column: Int, memory: inout [[Int]]) -> Int {
+        guard memory[row][column] == 0 else {
+            return memory[row][column]
+        }
+        
+        //经过了该节点
+        memory[row][column] += 1
+        for item in direction {
+            let newRow = row + item.0
+            let newColumn = column + item.1
+            if newRow >= 0, newColumn >= 0, newRow < matrix.count, newColumn < matrix[0].count, matrix[newRow][newColumn] > matrix[row][column] {
+                memory[row][column] = max(memory[row][column], search(matrix: matrix, row: newRow, column: newColumn, memory: &memory) + 1)
+            }
+        }
+        
+        return memory[row][column]
+    }
+}
+
+Solution().solve([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+Solution().solve([[9, 8, 7], [2, 1, 6], [3, 4, 5]])
+*/
+
+/*
+//矩阵乘法
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param a int整型二维数组 第一个矩阵
+     * @param b int整型二维数组 第二个矩阵
+     * @return int整型二维数组
+     */
+    func solve ( _ a: [[Int]],  _ b: [[Int]]) -> [[Int]] {
+        // write code here
+        
+        guard !a.isEmpty else {
+            return []
+        }
+        
+        let maxRow = a.count
+        let maxColumn = a[0].count
+        
+        var result: [[Int]] = []
+        
+        for row in 0 ..< maxRow {
+            var rowValues: [Int] = []
+            for column in 0 ..< maxColumn {
+                var value = 0
+                for i in 0 ..< maxRow {
+                    value += a[row][i] * b[i][column]
+                }
+                rowValues.append(value)
+            }
+            result.append(rowValues)
+        }
+        
+        return result
+    }
+}
+
+
+Solution().solve([[1,2],[3,2]],[[3,4],[2,1]])
+*/
