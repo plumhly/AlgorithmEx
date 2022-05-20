@@ -6933,3 +6933,632 @@ public class Solution {
 
 Solution().solve([[1,2],[3,2]],[[3,4],[2,1]])
 */
+
+/*
+//二叉搜索树与双向链表
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param pRootOfTree TreeNode类
+     * @return TreeNode类
+     */
+    func Convert ( _ pRootOfTree: TreeNode?) -> TreeNode? {
+        // write code here
+        
+        return scan(p: pRootOfTree).head
+    }
+    
+    private
+    func scan(p: TreeNode?) -> (head: TreeNode?, tail: TreeNode?) {
+        guard let p = p else {
+            return (nil, nil)
+        }
+        
+        let leftResult = scan(p: p.left)
+        var head = leftResult.head
+        var tail = leftResult.tail
+        if tail != nil {
+            tail?.right = p
+            p.left = tail
+            tail = p
+        } else {
+            head = p
+            tail = p
+            p.left = nil
+        }
+        
+        let rightResult = scan(p: p.right)
+        if let rHead = rightResult.head {
+            tail?.right = rHead
+            rHead.left = tail
+            tail = rightResult.tail
+        }
+        
+        return (head, tail)
+    }
+}
+*/
+
+/*
+//阶乘末尾0的数量
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * the number of 0
+     * @param n long长整型 the number
+     * @return long长整型
+     */
+    func thenumberof0 ( _ n: Int64) -> Int64 {
+        // write code here
+        guard n > 0 else {
+            return 0
+        }
+        
+        
+        var start: Int64 = 5
+        var count: Int64 = 0
+        while start <= n {
+            count += (n / start)
+            start *= 5
+        }
+        
+        return count
+    }
+}
+
+Solution().thenumberof0(5)
+Solution().thenumberof0(10)
+Solution().thenumberof0(14)
+Solution().thenumberof0(25)
+*/
+
+/*
+//找到搜索二叉树中两个错误的节点
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param root TreeNode类 the root
+     * @return int整型一维数组
+     */
+    func findError ( _ root: TreeNode?) -> [Int] {
+        // write code here
+        return method3(root)
+    }
+    
+    /*
+     显示中序遍历
+     时间：O(n)
+     空间：O(n)
+     */
+    private
+    func method1(_ root: TreeNode?) -> [Int] {
+        guard let root = root else {
+            return []
+        }
+        
+        var orderResult: [Int] = []
+        
+        func inorder(_ root: TreeNode?) {
+            guard let root = root else {
+                return
+            }
+            
+            inorder(root.left)
+            orderResult.append(root.val)
+            inorder(root.right)
+        }
+        
+        inorder(root)
+        
+        var x = 0
+        var y = 0
+        var count = 0
+        
+        for i in 1 ..< orderResult.count {
+            if orderResult[i - 1] > orderResult[i] {
+                /*
+                 如果有两处，
+                 第一处是该index前后都小于改点，山峰
+                 第二处是处处于山谷
+                 */
+                if count == 1 {
+                    y = i
+                } else {
+                    // 表示第一次
+                    x = i - 1
+                    y = i
+                }
+                count += 1
+            }
+            
+            if count == 2 {
+                break
+            }
+        }
+        
+        
+        guard count > 0 else {
+            return []
+        }
+        
+        return [orderResult[y], orderResult[x]]
+    }
+    
+    //隐式中序遍历
+    /*
+     时间：O(n)
+     空间：O(h),h是树高
+     */
+    private
+    func method2(_ root: TreeNode?) -> [Int] {
+        guard root != nil else {
+            return []
+        }
+        
+        var root = root
+        var stack = Stack<TreeNode>()
+        var pre: TreeNode? = nil
+        
+        var peak: TreeNode? = nil
+        var valley: TreeNode? = nil
+        
+        while !stack.isEmpty || root != nil {
+            // 一直遍历左子树
+            while let r = root {
+                stack.push(value: r)
+                root = r.left
+            }
+            // 获取最先的节点
+            root = stack.pop()
+            
+            if let p = pre, let r = root, p.val > r.val {
+                valley = r
+                if peak == nil {
+                    //第一次
+                    peak = pre
+                } else {
+                    //第二次
+                    valley = r
+                    break
+                }
+            }
+            
+            pre = root
+            root = root?.right
+        }
+        
+        return [valley!.val, peak!.val]
+    }
+    
+    // morris算法
+    /*
+     规则
+     1.如果cur无左孩子，cur向右移动（cur=cur.right）
+     2.如果cur有左孩子，找到cur左子树上最右的节点，记为mostright
+        2-a.如果mostright的right指针指向空，让其指向cur，cur向左移动（cur=cur.left）
+        2-b.如果mostright的right指针指向cur，让其指向空，cur向右移动（cur=cur.right）
+
+     时间：O(2n)
+     空间：O(1)
+     */
+    func method3(_ root: TreeNode?) -> [Int] {
+        guard root != nil else {
+            return []
+        }
+        
+        var pre: TreeNode? = nil
+        var current = root
+        var rightMost: TreeNode? = nil
+        
+        var peak: TreeNode? = nil
+        var valley: TreeNode? = nil
+        
+        while let cur = current {
+            rightMost = cur.left
+            while let rm = rightMost, let rmr = rm.right, rmr.val != cur.val {
+                rightMost = rmr
+            }
+            
+            // 如果找到了前驱结点
+            if rightMost != nil {
+                
+                // 如果前驱的右节点有值（也就是已经被构建链表了）
+                if rightMost?.right != nil  {
+                    // 从左子树会到了父节点，这里需要对比root和root的前驱结点（也就是类似数组中相邻的元素对比）
+                    if let pr = pre, pr.val > cur.val {
+                        valley = current
+                        if peak == nil {
+                            peak = pre
+                        } else {
+                            break
+                        }
+                    }
+                    //断链
+                    rightMost?.right = nil
+                } else {
+                    //构建链表
+                    rightMost?.right = current
+                    //这里不能写 pre = current，因为 current 不是 current.left的前驱
+                    if let left = current?.left {
+                        current = left
+                        continue
+                    }
+                }
+            } else {
+                if let pr = pre, pr.val > cur.val {
+                    valley = current
+                    if peak == nil {
+                        peak = pre
+                    } else {
+                        break
+                    }
+                }
+            }
+            
+            pre = current
+            current = current?.right
+        }
+        
+        guard let v = valley, let p = peak else {
+            return []
+        }
+        
+        return [v.val, p.val]
+    }
+}
+*/
+
+/*
+//最长重复子串
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param a string字符串 待计算字符串
+     * @return int整型
+     */
+    func solve ( _ a: String) -> Int {
+        // write code here
+        return method2(a)
+    }
+    
+    /*
+     时间：O(n^3)
+     空间：O(1)
+     */
+    private
+    func method1(_ s: String) -> Int {
+        
+        func check(s: [Character], length: Int, startIndex: Int) -> Bool {
+            let end = startIndex + length * 2
+            guard end <= s.count else {
+                return false
+            }
+            
+            let lastIndex = startIndex + length - 1
+            var result = true
+            for i in startIndex ... lastIndex {
+                if s[i] != s[i + length] {
+                    result = false
+                    break
+                }
+            }
+            
+            return result
+        }
+        
+        guard s.count > 1 else {
+            return 0
+        }
+        
+        let s = Array(s)
+        let maxLength = s.count / 2
+        for length in stride(from: maxLength, through: 1, by: -1) {
+            let endIndex = s.count - (length * 2)
+            for index in 0 ... endIndex {
+                if check(s: s, length: length, startIndex: index) {
+                    return length * 2
+                }
+            }
+        }
+        
+        return 0
+    }
+    
+    /*
+     时间：O(n^2)
+     空间：O(1)
+     */
+    private
+    func method2(_ s: String) -> Int {
+        guard s.count > 1 else {
+            return 0
+        }
+        
+        let s = Array(s)
+        let maxLength = s.count / 2
+        for length in stride(from: maxLength, through: 1, by: -1) {
+            let endIndex = s.count - length - 1
+            let lastIndex = s.count - (2 * length)
+            var result = 0
+            for index in 0 ... endIndex {
+                if s[index] == s[index + length] {
+                    result += 1
+                } else {
+                    result = 0
+                    if index >= lastIndex {
+                        break
+                    }
+                }
+            
+                if result == length {
+                    return 2 * result
+                }
+            }
+        }
+        
+        return 0
+    }
+}
+
+Solution().solve("abab")
+Solution().solve("abcb")
+Solution().solve("aab")
+*/
+
+/*
+//扑克牌顺子
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param numbers int整型一维数组
+     * @return bool布尔型
+     */
+    func IsContinuous ( _ numbers: [Int]) -> Bool {
+        // write code here
+        return method2(numbers)
+    }
+    
+    private
+    func method1(_ numbers: [Int]) -> Bool {
+        guard numbers.count == 5 else {
+            return false
+        }
+        
+        let numbers = numbers.sorted()
+        
+        var gap = 0
+        for index in 0 ..< numbers.count {
+            if numbers[index] == 0 {
+                gap += 1
+            } else if index > 0, numbers[index - 1] > 0 {
+                if numbers[index] == numbers[index - 1] {
+                    return false
+                } else {
+                    gap -= numbers[index] - numbers[index - 1] - 1
+                }
+            }
+            
+        }
+        
+        return gap >= 0
+    }
+    
+    //使用set
+    private
+    func method2(_ numbers: [Int]) -> Bool {
+        // 寻找最大最小值
+        var maxValue = 0
+        var minValue = 14
+        var set: Set<Int> = []
+        
+        for value in numbers {
+            if value == 0 {
+                continue
+            }
+            if set.contains(value) {
+                return false
+            }
+            set.insert(value)
+            maxValue = max(maxValue, value)
+            minValue = min(minValue, value)
+        }
+        
+        return maxValue - minValue < 5
+    }
+    
+    //使用bitmap
+    private
+    func method3(_ numbers: [Int]) -> Bool {
+        // 寻找最大最小值
+        var maxValue = 0
+        var minValue = 14
+        var flag = 0
+        
+        for value in numbers {
+            if value == 0 {
+                continue
+            }
+            //重复
+            if (flag >> value) & 1 == 1 {
+                return false
+            }
+            
+            flag = flag | (1 << value)
+            
+            maxValue = max(maxValue, value)
+            minValue = min(minValue, value)
+        }
+        
+        return maxValue - minValue < 5
+    }
+}
+*/
+/*
+//丑数
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * @param index int整型
+     * @return int整型
+     */
+    func GetUglyNumber_Solution ( _ index: Int) -> Int {
+        // write code here
+        // 0 返回 0
+        // 1 返回 1
+        guard index > 1 else {
+            return index
+        }
+        
+        var dp = Array<Int>(repeating: 0, count: index + 1)
+        
+        dp[1] = 1
+        
+        // 从丑数推丑数
+        var two = 1
+        var three = 1
+        var five = 1
+        
+        for i in 2 ... index {
+            let twoResult = dp[two] * 2
+            let threeResult = dp[three] * 3
+            let fiveResult = dp[five] * 5
+        
+            dp[i] = min(twoResult, threeResult, fiveResult)
+            //⚠️这里不是互斥的，因为 twoResult, threeResult, fiveResult 其中有相等的, 6 = 2x3 30 = 2x3x5
+            if dp[i] == twoResult {
+                two += 1
+            }
+            
+            if dp[i] == threeResult {
+                three += 1
+            }
+            
+            if dp[i] == fiveResult {
+                five += 1
+            }
+        }
+        return dp[index]
+    }
+}
+Solution().GetUglyNumber_Solution(7)
+*/
+
+/*
+//分糖果问题
+//分数一样的得到的糖果可以不同
+// 比如 1233，我们就可以这样分糖果：1231，
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     * pick candy
+     * @param arr int整型一维数组 the array
+     * @return int整型
+     */
+    func candy ( _ arr: [Int]) -> Int {
+        // write code here
+        return method2(arr)
+    }
+    
+    // 2次遍历
+    /*
+     时间：O(n)
+     空间：O(n)
+     */
+    private
+    func method1 ( _ arr: [Int]) -> Int {
+        guard arr.count > 1 else {
+            return arr.count
+        }
+        //从左到右，遇到大的就加1，否则置为1
+        var leftValues = [Int](repeating: 0, count: arr.count)
+        for i in 0 ..< arr.count {
+            if i > 0, arr[i - 1] < arr[i] {
+                leftValues[i] = leftValues[i - 1] + 1
+            } else {
+                leftValues[i] = 1
+            }
+        }
+        
+        //从右到左
+        var result = 0
+        var right = 0
+        for i in stride(from: arr.count - 1, through: 0, by: -1) {
+            if i < arr.count - 1, arr[i] > arr[i + 1] {
+                right += 1
+            } else {
+                right = 1
+            }
+            
+            result += max(leftValues[i], right)
+        }
+        
+        return result
+    }
+    
+    private
+    func method2 ( _ arr: [Int]) -> Int {
+        /*
+         递增长度包括顶峰
+         递减长度不包括顶峰，当递减长度>递增长度，那么需要再峰顶额外加1
+         */
+        guard arr.count > 1 else {
+            return arr.count
+        }
+        
+        var result = 1
+        //第一个数字之后可能是递增，可能是递减，所以递增和递减序列的初始长度都为1
+        var increaseLength = 1
+        var descreaseLenght = 1
+        var pre = 1
+        for i in 1 ..< arr.count {
+            // 递增
+            if arr[i] >= arr[i - 1] {
+                descreaseLenght = 0
+                //判断是否重复，如果重复，那么后一个可以分配最低1
+                pre = arr[i] == arr[i - 1] ? 1 : pre + 1
+                result += pre
+                increaseLength = pre
+            } else {
+                descreaseLenght += 1
+                //如递减序列长度大于递增，那么需要给峰顶加1
+                if descreaseLenght == increaseLength {
+                    descreaseLenght += 1
+                }
+                result += descreaseLenght
+                //当前置为1，递减序列中的之前元素都加1
+                pre = 1
+            }
+        }
+        
+        return result
+    }
+}
+
+Solution().candy([2,1])
+*/
+
+//kmp算法
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * 计算模板串S在文本串T中出现了多少次
+     * @param S string字符串 模板串
+     * @param T string字符串 文本串
+     * @return int整型
+     */
+    func kmp ( _ S: String,  _ T: String) -> Int {
+        // write code here
+        guard !S.isEmpty, !T.isEmpty else {
+            return S.count == T.count ? 1 : 0
+        }
+        
+        //查找
+    }
+}
