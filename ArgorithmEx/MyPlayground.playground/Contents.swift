@@ -7543,6 +7543,7 @@ public class Solution {
 Solution().candy([2,1])
 */
 
+/*
 //kmp算法
 public class Solution {
     /**
@@ -7560,5 +7561,220 @@ public class Solution {
         }
         
         //查找
+        let t = Array(T)
+        let s = Array(S)
+        let patternArray = getPrefixArray(pattern: s)
+        var result = 0
+        
+        var q = 0
+        for i in 0 ..< t.count {
+            while q > 0, s[q] != t[i] {
+                q = patternArray[q]
+            }
+            
+            if s[q] == t[i] {
+                q += 1
+            }
+            
+            if q == s.count {
+                result += 1
+                q = patternArray[q]
+            }
+        }
+        
+        return result
+    }
+    
+    
+    private
+    func getPrefixArray(pattern: [Character]) -> [Int] {
+        guard !pattern.isEmpty else {
+            return []
+        }
+        
+        var result = [Int](repeating: 0, count: pattern.count + 1)
+        
+        guard pattern.count > 1 else {
+            return result
+        }
+        
+        var k = 0
+        for index in 2 ... pattern.count {
+            while k > 0, pattern[k] != pattern[index - 1] {
+                k = result[k]
+            }
+            
+            if pattern[k] == pattern[index - 1] {
+                k += 1
+            }
+            result[index] = k
+        }
+        
+        return result
+    }
+}
+
+Solution().kmp("ab", "abaab")
+*/
+
+/*
+// 最小生成树
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * 返回最小的花费代价使得这n户人家连接起来
+     * @param n int整型 n户人家的村庄
+     * @param m int整型 m条路
+     * @param cost int整型二维数组 一维3个参数，表示连接1个村庄到另外1个村庄的花费的代价
+     * @return int整型
+     */
+    func miniSpanningTree ( _ n: Int,  _ m: Int,  _ cost: [[Int]]) -> Int {
+        // write code here
+        return usingKruskal(n, m, cost)
+    }
+    
+    private
+    func usingKruskal ( _ n: Int,  _ m: Int,  _ cost: [[Int]]) -> Int {
+        guard !cost.isEmpty else {
+            return 0
+        }
+        let array = cost.sorted {$0[2] < $1[2]}
+        var points = Array(0...n)
+        
+        var result = 0
+        for item in array {
+            let startValue = find(points: &points, start: item[0])
+            let endValue = find(points: &points, start: item[1])
+            if startValue != endValue {
+                result += item[2]
+                // 合并
+                points[startValue] = endValue
+            }
+        }
+
+        return result
+    }
+    
+    private
+    func find(points: inout [Int], start: Int) -> Int {
+        guard points[start] != start else {
+            return start
+        }
+        
+        points[start] = find(points: &points, start: points[start])
+        return points[start]
+    }
+    
+    private
+    func usingPrim ( _ n: Int,  _ m: Int,  _ cost: [[Int]]) -> Int {
+        guard !cost.isEmpty else {
+            return 0
+        }
+        var array = cost.sorted {$0[2] < $1[2]}
+        var points: Set<Int> = []
+        points.insert(array[0][0])
+        points.insert(array[0][1])
+        
+        var result = array[0][2]
+        
+        while points.count != n {
+            for (index, item) in array.enumerated() {
+                if (points.contains(item[0]) && !points.contains(item[1])) || (!points.contains(item[0]) && points.contains(item[1])) {
+                    result += item[2]
+                    points.insert(item[0])
+                    points.insert(item[1])
+                    array.remove(at: index)
+                    break
+                }
+            }
+        }
+        
+        return result
+    }
+}
+
+Solution().miniSpanningTree(3,3,[[1,3,3],[1,2,1],[2,3,1]])
+*/
+/*
+//数组中只出现一次的两个数字
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param array int整型一维数组
+     * @return int整型一维数组
+     */
+    func FindNumsAppearOnce ( _ array: [Int]) -> [Int] {
+        // write code here
+        
+        guard array.count > 1 else {
+            return []
+        }
+        
+        var totalXORValue = 0
+        for value in array {
+            totalXORValue ^= value
+        }
+        
+        //寻找最低位是1
+//        let shitValue = (totalXORValue & (-totalXORValue)) - 1
+        
+        var mask = 1
+        while totalXORValue & mask == 0 {
+            mask <<= 1
+        }
+        
+        var firstGroupResult = 0
+        var secondGroupResult = 0
+        
+        for value in array {
+//            if ((value >> shitValue) & 1) == 0 {
+            if value & mask == 0 {
+                firstGroupResult ^= value
+            } else {
+                secondGroupResult ^= value
+            }
+        }
+        
+        let maxValue = max(firstGroupResult, secondGroupResult)
+        let minValue = min(firstGroupResult, secondGroupResult)
+        
+        return [minValue, maxValue]
+    }
+}
+
+
+Solution().FindNumsAppearOnce([1, 4, 1, 6])
+*/
+
+//最大公约数
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * 求出a、b的最大公约数。
+     * @param a int整型
+     * @param b int整型
+     * @return int整型
+     */
+    
+    //gcd(a, b) <==> gcd(b, a%b)，直到b为0的时候,a即为答案
+    func gcd ( _ a: Int,  _ b: Int) -> Int {
+        // write code here
+        guard a > 0, b > 0 else {
+            return 0
+        }
+        
+        var a = a
+        var b = b
+        while b != 0 {
+            let temp = b
+            b = a % b
+            a = temp
+        }
+        
+        return a
     }
 }
