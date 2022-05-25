@@ -2058,6 +2058,11 @@ struct Stack<T> {
     func peek() -> T? {
         return data.last
     }
+    
+    mutating
+    func clear() {
+        data.removeAll()
+    }
 }
 
 /*
@@ -7749,6 +7754,7 @@ public class Solution {
 Solution().FindNumsAppearOnce([1, 4, 1, 6])
 */
 
+/*
 //最大公约数
 public class Solution {
     /**
@@ -7778,3 +7784,123 @@ public class Solution {
         return a
     }
 }
+*/
+
+/*
+// 二叉树的中序遍历
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param root TreeNode类
+     * @return int整型一维数组
+     */
+    func inorderTraversal ( _ root: TreeNode?) -> [Int] {
+        // write code here
+        var result: [Int] = []
+        traversal(root: root, data: &result)
+        
+        return result
+    }
+    
+    private
+    func traversal(root: TreeNode?, data: inout [Int]) {
+        guard let root = root else {
+            return
+        }
+        
+        traversal(root: root.left, data: &data)
+        data.append(root.val)
+        traversal(root: root.right, data: &data)
+    }
+}
+*/
+
+/*
+//主持人调度（二）
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     * 计算成功举办活动需要多少名主持人
+     * @param n int整型 有n个活动
+     * @param startEnd int整型二维数组 startEnd[i][0]用于表示第i个活动的开始时间，startEnd[i][1]表示第i个活动的结束时间
+     * @return int整型
+     */
+    func minmumNumberOfHost ( _ n: Int,  _ startEnd: [[Int]]) -> Int {
+        // write code here
+        let starts: [Int] = startEnd.map { $0[0] }.sorted(by: <)
+        let ends: [Int] = startEnd.map { $0[1] }.sorted(by: <)
+        
+        var host = 0
+        var endIndex = 0
+        for value in starts {
+            //如果开始时间大于上一场的结束时间，就不需要增加主持人
+            if value >= ends[endIndex]  {
+                endIndex += 1
+            } else {
+                host += 1
+            }
+        }
+        
+        return host
+    }
+}
+
+Solution().minmumNumberOfHost(2, [[1, 2], [1, 3]])
+*/
+
+// 单调栈
+public class Solution {
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param nums int整型一维数组
+     * @return int整型二维数组
+     */
+    func foundMonotoneStack ( _ nums: [Int]) -> [[Int]] {
+        // write code here
+        //[3,4,1,5,6,2,7]
+        
+        guard !nums.isEmpty else {
+            return []
+        }
+        
+        var result = [[Int]](repeating: [Int](repeating: -1, count: 2), count: nums.count)
+        var stack = Stack<Int>()
+        
+        //从左到右
+        for (index, value) in nums.enumerated() {
+            while !stack.isEmpty, let peek = stack.peek(), nums[peek] >= value {
+                stack.pop()
+            }
+            
+            if let peek = stack.peek() {
+                result[index][0] = peek
+            }
+            
+            stack.push(value: index)
+        }
+    
+        stack.clear()
+        
+        // 右到左
+        for index in stride(from: nums.count - 1, through: 0, by: -1) {
+            while !stack.isEmpty, let peek = stack.peek(), nums[peek] >= nums[index] {
+                stack.pop()
+            }
+            
+            if let peek = stack.peek() {
+                result[index][1] = peek
+            }
+            
+            stack.push(value: index)
+        }
+        
+        return result
+    }
+}
+
+Solution().foundMonotoneStack([3,4,1,5,6,2,7])
